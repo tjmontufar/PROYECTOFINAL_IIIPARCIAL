@@ -7,8 +7,8 @@ class Turret(pg.sprite.Sprite):
         self.title_x = title_x
         self.title_y = title_y
         #calcular centro de las coordenadas
-        self.x = (self.title_x + 0.5)* c.TITLE_SIZE
-        self.y = (self.title_y + 0.5)* c.TITLE_SIZE
+        self.x = (self.title_x + 0.5)* c.TILE_SIZE
+        self.y = (self.title_y + 0.5)* c.TILE_SIZE
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.center = (self.x , self.y)

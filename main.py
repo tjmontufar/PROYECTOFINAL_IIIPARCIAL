@@ -2,6 +2,7 @@ import pygame as pg
 import json
 from enemy import Enemy
 from turret import Turret
+from button import Button
 from world import World
 import constants as c
 pg.init()
@@ -9,18 +10,23 @@ pg.init()
 #Crear un reloj
 clock = pg.time.Clock()
 
-screen = pg.display.set_mode((c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
+screen = pg.display.set_mode((c.SCREEN_WIDTH + c.SIDE_PANEL, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defence")
 
 # Cargar imagenes
 
 # Mapa
 map_image = pg.image.load("niveles/level.png").convert_alpha()
+
 # Enemigo
 enemy_image = pg.image.load("imagen/enemy_1.png").convert_alpha()
+
+# Botones
+buy_turret_image = pg.image.load("imagen/buy_turret.png").convert_alpha()
+cancel_image = pg.image.load("imagen/cancel.png").convert_alpha()
+
 #Torre individual imagen 
 cursor_turret = pg.image.load("imagen/cursor_turret.png").convert_alpha()
-
 
 # Cargar el archivo json para la ruta del nivel
 with open("niveles/level.tmj") as file:
@@ -28,8 +34,8 @@ with open("niveles/level.tmj") as file:
 
 # Crear un grupo de torretas
 def create_turret(mouse_pos):
-    mouse_title_x = mouse_pos[0] // c.TITLE_SIZE
-    mouse_title_y = mouse_pos[1] // c.TITLE_SIZE
+    mouse_title_x = mouse_pos[0] // c.TILE_SIZE
+    mouse_title_y = mouse_pos[1] // c.TILE_SIZE
     #Calcular la secuencia de numeros del titulo
     mouse_tile_num = (mouse_title_y * c.COLS) + mouse_title_x
     #Chequiar si el titulo es valido
@@ -59,6 +65,10 @@ enemy = Enemy(world.waypoints, enemy_image)
 # Añadir imagenes a los grupos
 enemy_group.add(enemy)
 
+# Crear botones
+turret_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image)
+cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image)
+
 run = True
 while run:
 
@@ -66,15 +76,28 @@ while run:
     # Colocar un color de fondo
     screen.fill("grey100")
 
-    # Dibujar el mundo
-    world.draw(screen)
+    #############################
+    # Seccion de Actualizacion
+    #############################
 
     # Actualizar los grupos
     enemy_group.update()
 
+    #############################
+    # Seccion de Dibujo
+    #############################
+
+    # Dibujar el mundo
+    world.draw(screen)
     # Dibujar grupos
     enemy_group.draw(screen)
     turret_group.draw(screen)
+    # Dibujar botones
+    # Boton para colocar torretas
+    if turret_button.draw(screen):
+        print("Nueva torreta")
+    if cancel_button.draw(screen):
+        print("Cancelar torreta")
 
     # Manejo del evento
     for event in pg.event.get():
