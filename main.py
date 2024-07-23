@@ -1,5 +1,7 @@
 import pygame as pg
+import json
 from enemy import Enemy
+from world import World
 import constants as c
 pg.init()
 
@@ -9,19 +11,25 @@ clock = pg.time.Clock()
 screen = pg.display.set_mode((c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defence")
 
+# Cargar imagenes
+
+# Mapa
+map_image = pg.image.load("niveles/level.png").convert_alpha()
+# Enemigo
 enemy_image = pg.image.load("imagen/enemy_1.png").convert_alpha()
+
+# Cargar el archivo json para la ruta del nivel
+with open("niveles/level.tmj") as file:
+    world_data = json.load(file)
+
+# Crear el mundo
+world = World(world_data, map_image)
+world.process_data()
 
 # Crear grupos de imagenes
 enemy_group = pg.sprite.Group()
-
-waypoints = [
-    (100,100),
-    (400,200),
-    (400,100),
-    (200,300),
-]
-
-enemy = Enemy(waypoints,enemy_image)
+# Crear un enemigo y ruta de patrullaje
+enemy = Enemy(world.waypoints, enemy_image)
 
 # Añadir imagenes a los grupos
 enemy_group.add(enemy)
@@ -33,8 +41,8 @@ while run:
     # Colocar un color de fondo
     screen.fill("grey100")
 
-    # Dibujar el camino del enemigo
-    pg.draw.lines(screen, "grey0", False, waypoints)
+    # Dibujar el mundo
+    world.draw(screen)
 
     # Actualizar los grupos
     enemy_group.update()
