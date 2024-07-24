@@ -13,7 +13,7 @@ class Button():
         # Obtener la posicion del mouse
         pos = pg.mouse.get_pos()
 
-        # Verificar evento mouseover y condiciones de clickeo
+        # Verificar si el mouse se encuentra sobre el boton y condiciones de clickeo
         if self.rect.collidepoint(pos):
             if pg.mouse.get_pressed()[0] == 1 and self.clicked == False:
                 action = True
