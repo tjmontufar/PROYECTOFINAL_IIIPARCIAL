@@ -23,21 +23,28 @@ selected_turret = None
 # Cargar imagenes
 
 # Mapa
-map_image = pg.image.load("imagen/niveles/level.png").convert_alpha()
+map_image = pg.image.load('imagen/niveles/level.png').convert_alpha()
 
 # Enemigo
-enemy_image = pg.image.load("imagen/enemigos/enemy_1.png").convert_alpha()
+enemy_image = pg.image.load('imagen/enemigos/enemy_1.png').convert_alpha()
 
 # Botones
-buy_turret_image = pg.image.load("imagen/botones/buy_turret.png").convert_alpha()
-cancel_image = pg.image.load("imagen/botones/cancel.png").convert_alpha()
+buy_turret_image = pg.image.load('imagen/botones/buy_turret.png').convert_alpha()
+cancel_image = pg.image.load('imagen/botones/cancel.png').convert_alpha()
+upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret.png').convert_alpha()
 
-#Torre individual imagen 
-turret_sheet = pg.image.load("imagen/torretas/turret_1.png").convert_alpha()
-cursor_turret = pg.image.load("imagen/torretas/cursor_turret.png").convert_alpha()
+# Imagen de la torreta
+turret_spritesheets = []
+# Cambiar la imagen de la torreta si sufre mejoras
+for x in range(1, c.TURRET_LEVELS + 1):
+    turret_sheet = pg.image.load(f'imagen/torretas/turret_{x}.png').convert_alpha()
+    turret_spritesheets.append(turret_sheet)
+
+# Imagen del cursor de la torreta
+cursor_turret = pg.image.load('imagen/torretas/cursor_turret.png').convert_alpha()
 
 # Cargar el archivo json para la ruta del nivel
-with open("imagen/niveles/level.tmj") as file:
+with open('imagen/niveles/level.tmj') as file:
     world_data = json.load(file)
 
 # Crear un grupo de torretas
@@ -59,7 +66,7 @@ def create_turret(mouse_pos):
 
         #Si la torre no es una torre no valida, no crearla
         if space_is_free == True:
-            new_turret = Turret(turret_sheet, mouse_tile_x, mouse_tile_y)
+            new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y)
             turret_group.add(new_turret)
 
 def select_turret(mouse_pos):
@@ -90,6 +97,7 @@ enemy_group.add(enemy)
 # Crear botones
 turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, True)
 cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
+upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
 
 run = True
 while run:
@@ -136,6 +144,13 @@ while run:
         screen.blit(cursor_turret, cursor_rect)
         if cancel_button.draw(screen):
             placing_turrets = False
+    
+    # Si la torreta es seleccionada, entonces mostrar el boton de mejora
+    if selected_turret:
+        # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
+        if selected_turret.upgrade_level < c.TURRET_LEVELS:
+            if upgrade_button.draw(screen):
+                selected_turret.upgrade()
 
     # Manejo del evento
     for event in pg.event.get():
