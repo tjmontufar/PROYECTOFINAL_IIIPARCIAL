@@ -103,8 +103,8 @@ while run:
     #############################
 
     # Actualizar los grupos
-    enemy_group.update()
-    turret_group.update()
+    enemy_group.update() 
+    turret_group.update(enemy_group)
 
     # Marcar la torre seleccionada
     if selected_turret:
