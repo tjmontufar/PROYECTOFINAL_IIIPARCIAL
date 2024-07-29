@@ -17,6 +17,7 @@ screen = pg.display.set_mode((c.SCREEN_WIDTH + c.SIDE_PANEL, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defence")
 
 #Variables del Juego
+last_enemy_spawn = pg.time.get_ticks()
 placing_turrets = False
 selected_turret = None
 
@@ -26,6 +27,12 @@ selected_turret = None
 map_image = pg.image.load('imagen/niveles/level.png').convert_alpha()
 
 # Enemigo
+enemy_images = {
+    "weak": pg.image.load('imagen/enemigos/enemy_1.png').convert_alpha(),
+    "medium": pg.image.load('imagen/enemigos/enemy_2.png').convert_alpha(),
+    "strong": pg.image.load('imagen/enemigos/enemy_3.png').convert_alpha(),
+    "elite": pg.image.load('imagen/enemigos/enemy_4.png').convert_alpha()
+}
 enemy_image = pg.image.load('imagen/enemigos/enemy_1.png').convert_alpha()
 
 # Botones
@@ -83,16 +90,11 @@ def clear_selection():
 # Crear el mundo
 world = World(world_data, map_image)
 world.process_data()
+world.process_enemies()
 
 # Crear grupos de imagenes
 enemy_group = pg.sprite.Group()
 turret_group = pg.sprite.Group()
-
-# Crear un enemigo y ruta de patrullaje
-enemy = Enemy(world.waypoints, enemy_image)
-
-# Añadir imagenes a los grupos
-enemy_group.add(enemy)
 
 # Crear botones
 turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, True)
@@ -129,6 +131,15 @@ while run:
     enemy_group.draw(screen)
     for turret in turret_group:
         turret.draw(screen)
+    
+    # Spawn de enemigos
+    if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
+        if world.spawned_enemies < len(world.enemy_list):
+            enemy_type = world.enemy_list[world.spawned_enemies]
+            enemy = Enemy(enemy_type, world.waypoints, enemy_images)
+            enemy_group.add(enemy)
+            world.spawned_enemies += 1
+            last_enemy_spawn = pg.time.get_ticks()
 
     # Dibujar botones
     if turret_buy_button.draw(screen):
