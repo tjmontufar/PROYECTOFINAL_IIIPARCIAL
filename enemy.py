@@ -37,8 +37,8 @@ class Enemy(pg.sprite.Sprite):
         # Calcular la distancia hacia el objetivo
         dist = self.movement.length()
         # Ajustar la velocidad si es necesario para no pasar el waypoint
-        if dist >= self.speed:
-            self.pos += self.movement.normalize() * self.speed
+        if dist >= (self.speed * world.game_speed):
+            self.pos += self.movement.normalize() * (self.speed * world.game_speed)
         else:
             if dist != 0:
                 self.pos += self.movement.normalize() * dist

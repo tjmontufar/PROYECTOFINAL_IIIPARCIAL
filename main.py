@@ -46,6 +46,7 @@ cancel_image = pg.image.load('imagen/botones/cancel.png').convert_alpha()
 upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret.png').convert_alpha()
 begin_image = pg.image.load('imagen/botones/begin.png').convert_alpha()
 restart_image = pg.image.load('imagen/botones/restart.png').convert_alpha()
+fast_forward_image = pg.image.load('imagen/botones/fast_forward.png').convert_alpha()
 
 # Imagen de la torreta
 turret_spritesheets = []
@@ -121,6 +122,7 @@ cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
 restart_button = Button(310, 300, restart_image, True)
+fast_forward_button = Button(c.SCREEN_WIDTH + 50, 300, fast_forward_image, False)
 
 run = True
 while run:
@@ -180,6 +182,12 @@ while run:
             if begin_button.draw(screen):
                 level_started = True
         else:
+            # Opcion de Aceleracion de juego
+            world.game_speed = 1
+            if fast_forward_button.draw(screen):
+                world.game_speed = 2
+            print(world.game_speed)
+            
             # Spawn de enemigos
             if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
                 if world.spawned_enemies < len(world.enemy_list):
@@ -263,7 +271,6 @@ while run:
                         create_turret(mouse_pos)
                 else:
                     selected_turret = select_turret(mouse_pos)
-
 
     pg.display.flip()
 
