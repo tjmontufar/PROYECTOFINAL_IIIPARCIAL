@@ -54,6 +54,15 @@ cursor_turret = pg.image.load('imagen/torretas/cursor_turret.png').convert_alpha
 with open('imagen/niveles/level.tmj') as file:
     world_data = json.load(file)
 
+# Cargar fuentes para mostrar texto en pantalla
+text_font = pg.font.SysFont("Consolas", 24, bold=True)
+large_font = pg.font.SysFont("Consolas", 36)
+
+# Funciones para colocar texto en pantalla
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
+
 # Crear un grupo de torretas
 def create_turret(mouse_pos):
     mouse_tile_x = mouse_pos[0] // c.TILE_SIZE
@@ -75,6 +84,9 @@ def create_turret(mouse_pos):
         if space_is_free == True:
             new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y)
             turret_group.add(new_turret)
+
+            # Deducir el costo de la torreta
+            world.money -= c.BUY_COST
 
 def select_turret(mouse_pos):
     mouse_tile_x = mouse_pos[0] // c.TILE_SIZE
@@ -108,21 +120,21 @@ while run:
     # Colocar un color de fondo
     screen.fill("grey100")
 
-    #############################
-    # Seccion de Actualizacion
-    #############################
+    ##########################################################
+    #               SECCION DE ACTUALIZACION
+    ##########################################################
 
     # Actualizar los grupos
-    enemy_group.update() 
+    enemy_group.update(world) 
     turret_group.update(enemy_group)
 
     # Marcar la torre seleccionada
     if selected_turret:
         selected_turret.selected = True
 
-    #############################
-    # Seccion de Dibujo
-    #############################
+    ##########################################################
+    #               SECCION DE DIBUJO
+    ##########################################################
 
     # Dibujar el mundo
     world.draw(screen)
@@ -131,6 +143,10 @@ while run:
     enemy_group.draw(screen)
     for turret in turret_group:
         turret.draw(screen)
+    
+    # Mostrar texto de salud y dinero en pantalla
+    draw_text(str(world.health), text_font, "grey100", 0, 0)
+    draw_text(str(world.money), text_font, "grey100", 0, 30)
     
     # Spawn de enemigos
     if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
@@ -161,7 +177,10 @@ while run:
         # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
         if selected_turret.upgrade_level < c.TURRET_LEVELS:
             if upgrade_button.draw(screen):
-                selected_turret.upgrade()
+                # Verificar Si hay suficiente dinero para mejorar la torreta
+                if world.money >= c.UPGRADE_COST:
+                    selected_turret.upgrade()
+                    world.money -= c.UPGRADE_COST
 
     # Manejo del evento
     for event in pg.event.get():
@@ -171,13 +190,15 @@ while run:
         #Manejo de eventos del ratón
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = pg.mouse.get_pos()
-            #Chequiar si el ratón se encuentra sobre una torre
+            #Chequiar si el ratón se encuentra sobre una torreta
             if mouse_pos[0] < c.SCREEN_WIDTH and mouse_pos[1] < c.SCREEN_HEIGHT:
                 # Limpiar la seleccion de la torre
                 selected_turret = None
                 clear_selection()
                 if placing_turrets == True:
-                    create_turret(mouse_pos)
+                    # Revisar si hay suficiente dinero para poner una torreta
+                    if world.money >= c.BUY_COST:
+                        create_turret(mouse_pos)
                 else:
                     selected_turret = select_turret(mouse_pos)
 

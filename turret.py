@@ -66,15 +66,18 @@ class Turret(pg.sprite.Sprite):
         # Buscar un objetivo
         x_dist = 0
         y_dist = 0
-
         # Calcular la distancia entre la torre y el enemigo
         for enemy in enemy_group:
-            x_dist = enemy.pos[0] - self.x
-            y_dist = enemy.pos[1] - self.y
-            dist = math.sqrt(x_dist**2 + y_dist**2)
-            if dist < self.range:
-                self.target = enemy
-                self.angle = math.degrees(math.atan2(-y_dist, x_dist))
+            if enemy.health > 0:
+                x_dist = enemy.pos[0] - self.x
+                y_dist = enemy.pos[1] - self.y
+                dist = math.sqrt(x_dist**2 + y_dist**2)
+                if dist < self.range:
+                    self.target = enemy
+                    self.angle = math.degrees(math.atan2(-y_dist, x_dist))
+                    # Dañar al enemigo
+                    self.target.health -= c.DAMAGE
+                    break
 
     def play_animation(self):
         # Actualizar imagen
