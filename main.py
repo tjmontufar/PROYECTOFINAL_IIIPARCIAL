@@ -17,6 +17,7 @@ screen = pg.display.set_mode((c.SCREEN_WIDTH + c.SIDE_PANEL, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defence")
 
 #Variables del Juego
+level_started = False
 last_enemy_spawn = pg.time.get_ticks()
 placing_turrets = False
 selected_turret = None
@@ -39,6 +40,7 @@ enemy_image = pg.image.load('imagen/enemigos/enemy_1.png').convert_alpha()
 buy_turret_image = pg.image.load('imagen/botones/buy_turret.png').convert_alpha()
 cancel_image = pg.image.load('imagen/botones/cancel.png').convert_alpha()
 upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret.png').convert_alpha()
+begin_image = pg.image.load('imagen/botones/begin.png').convert_alpha()
 
 # Imagen de la torreta
 turret_spritesheets = []
@@ -112,6 +114,7 @@ turret_group = pg.sprite.Group()
 turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, True)
 cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
+begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
 
 run = True
 while run:
@@ -144,18 +147,34 @@ while run:
     for turret in turret_group:
         turret.draw(screen)
     
-    # Mostrar texto de salud y dinero en pantalla
-    draw_text(str(world.health), text_font, "grey100", 0, 0)
-    draw_text(str(world.money), text_font, "grey100", 0, 30)
+    # Mostrar textos en pantalla
+    draw_text(str(world.health), text_font, "grey100", 0, 0) # Salud
+    draw_text(str(world.money), text_font, "grey100", 0, 30) # Dinero
+    draw_text(str(world.level), text_font, "grey100", 0, 60) # Nivel
     
-    # Spawn de enemigos
-    if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
-        if world.spawned_enemies < len(world.enemy_list):
-            enemy_type = world.enemy_list[world.spawned_enemies]
-            enemy = Enemy(enemy_type, world.waypoints, enemy_images)
-            enemy_group.add(enemy)
-            world.spawned_enemies += 1
-            last_enemy_spawn = pg.time.get_ticks()
+    # Revisar si el juego ha iniciado o no
+    if level_started == False:
+        if begin_button.draw(screen):
+            level_started = True
+    else:
+        # Spawn de enemigos
+        if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
+            if world.spawned_enemies < len(world.enemy_list):
+                enemy_type = world.enemy_list[world.spawned_enemies]
+                enemy = Enemy(enemy_type, world.waypoints, enemy_images)
+                enemy_group.add(enemy)
+                world.spawned_enemies += 1
+                last_enemy_spawn = pg.time.get_ticks()
+
+    # Revisar si la ola de enemigos ha finalizado
+    if world.check_level_complete() == True:
+        # Comenzar un nuevo nivel
+        world.money += c.LEVEL_COMPLETE_REWARD
+        world.level += 1
+        level_started = False
+        last_enemy_spawn = pg.time.get_ticks()
+        world.reset_level()
+        world.process_enemies()
 
     # Dibujar botones
     if turret_buy_button.draw(screen):
