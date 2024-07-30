@@ -8,8 +8,9 @@ SCREEN_HEIGHT = TILE_SIZE * ROWS
 FPS = 60
 
 # Constantes de salud y dinero
-HEALTH = 100
+HEALTH = 1
 MONEY = 650
+TOTAL_LEVELS = 1
 
 # Constantes de enemigos
 SPAWN_COOLDOWN = 400
