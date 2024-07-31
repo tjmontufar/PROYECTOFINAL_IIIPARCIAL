@@ -20,6 +20,7 @@ pg.display.set_caption("Tower Defence")
 game_over = False
 game_outcome = 0 # -1 Si pierde, 1 si gana
 game_speed_toggle = False
+afford = False
 level_started = False
 last_enemy_spawn = pg.time.get_ticks()
 placing_turrets = False
@@ -42,9 +43,11 @@ enemy_images = {
 enemy_image = pg.image.load('imagen/enemigos/enemy_1.png').convert_alpha()
 
 # Botones
-buy_turret_image = pg.image.load('imagen/botones/buy_turret.png').convert_alpha()
+buy_turret_image = pg.image.load('imagen/botones/buy_turret_true.png').convert_alpha()
+buy_turret_false_image = pg.image.load('imagen/botones/buy_turret_false.png').convert_alpha()
 cancel_image = pg.image.load('imagen/botones/cancel.png').convert_alpha()
-upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret.png').convert_alpha()
+upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret_true.png').convert_alpha()
+upgrade_turret_false_image = pg.image.load('imagen/botones/upgrade_turret_false.png').convert_alpha()
 begin_image = pg.image.load('imagen/botones/begin.png').convert_alpha()
 restart_image = pg.image.load('imagen/botones/restart.png').convert_alpha()
 fast_forward_false_image = pg.image.load('imagen/botones/fast_forward_false.png').convert_alpha()
@@ -239,6 +242,7 @@ while run:
         # Para el boton de la torreta, mostrar el costo de la torreta y dibujar el boton
         draw_text(str(c.BUY_COST), text_font, "grey100", c.SCREEN_WIDTH + 215, 135)
         screen.blit(coin_image, (c.SCREEN_WIDTH + 260, 130))
+
         if turret_buy_button.draw(screen):
             placing_turrets = True
         
@@ -260,6 +264,11 @@ while run:
                 # Mostrar el costo de la mejora
                 draw_text(str(c.UPGRADE_COST), text_font, "grey100", c.SCREEN_WIDTH + 215, 195)
                 screen.blit(coin_image, (c.SCREEN_WIDTH + 260, 190))
+                # Actualizar la imagen del botón de mejora de torretas
+                if world.money >= c.UPGRADE_COST:
+                    upgrade_button.image = upgrade_turret_image
+                else:
+                    upgrade_button.image = upgrade_turret_false_image
                 if upgrade_button.draw(screen):
                     # Verificar Si hay suficiente dinero para mejorar la torreta
                     if world.money >= c.UPGRADE_COST:
