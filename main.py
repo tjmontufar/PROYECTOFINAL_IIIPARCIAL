@@ -50,6 +50,11 @@ restart_image = pg.image.load('imagen/botones/restart.png').convert_alpha()
 fast_forward_false_image = pg.image.load('imagen/botones/fast_forward_false.png').convert_alpha()
 fast_forward_true_image = pg.image.load('imagen/botones/fast_forward_true.png').convert_alpha()
 
+# Interfaz grafica
+heart_image = pg.image.load('imagen/iconos/heart.png').convert_alpha()
+coin_image = pg.image.load('imagen/iconos/coin.png').convert_alpha()
+logo_image = pg.image.load('imagen/iconos/logo.png').convert_alpha()
+
 # Imagen de la torreta
 turret_spritesheets = []
 # Cambiar la imagen de la torreta si sufre mejoras
@@ -72,6 +77,21 @@ large_font = pg.font.SysFont("Consolas", 36)
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
+
+def display_data():
+    # Dibujar el panel
+    pg.draw.rect(screen, "maroon", (c.SCREEN_WIDTH, 0, c.SIDE_PANEL, c.SCREEN_HEIGHT))
+    pg.draw.rect(screen, "grey0", (c.SCREEN_WIDTH, 0, c.SIDE_PANEL, 400), 2)
+    screen.blit(logo_image, (c.SCREEN_WIDTH, 400))
+    # Dibujar iconos
+
+    # Mostrar textos en pantalla
+    draw_text("NIVEL: " + str(world.level), text_font, "grey100", c.SCREEN_WIDTH + 10, 10) # Nivel
+    screen.blit(heart_image, (c.SCREEN_WIDTH + 10, 35)) # Icono de salud
+    draw_text(str(world.health), text_font, "grey100", c.SCREEN_WIDTH + 50, 40) # Salud
+    screen.blit(coin_image, (c.SCREEN_WIDTH + 10, 65)) # Icono de dinero
+    draw_text(str(world.money), text_font, "grey100", c.SCREEN_WIDTH + 50, 70) # Dinero
+    
 
 # Crear un grupo de torretas
 def create_turret(mouse_pos):
@@ -124,14 +144,13 @@ cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
 restart_button = Button(310, 300, restart_image, True)
-fast_forward_button = Button(c.SCREEN_WIDTH + 50, 300, fast_forward_false_image, False)
+fast_forward_button = Button(c.SCREEN_WIDTH + 60, 300, fast_forward_false_image, False)
 
 run = True
 while run:
 
     clock.tick(c.FPS)
     # Colocar un color de fondo
-    screen.fill("grey100")
 
     ##########################################################
     #               SECCION DE ACTUALIZACION
@@ -150,7 +169,7 @@ while run:
 
         # Actualizar los grupos
         enemy_group.update(world) 
-        turret_group.update(enemy_group)
+        turret_group.update(enemy_group, world)
 
         # Marcar la torre seleccionada
         if selected_turret:
@@ -167,11 +186,8 @@ while run:
     enemy_group.draw(screen)
     for turret in turret_group:
         turret.draw(screen)
-    
-    # Mostrar textos en pantalla
-    draw_text(str(world.health), text_font, "grey100", 0, 0) # Salud
-    draw_text(str(world.money), text_font, "grey100", 0, 30) # Dinero
-    draw_text(str(world.level), text_font, "grey100", 0, 60) # Nivel
+
+    display_data()
 
     ##########################################################
     #               LOGICA DEL NIVEL
@@ -191,12 +207,9 @@ while run:
             if game_speed_toggle:
                 world.game_speed = 1
                 fast_forward_button.image = fast_forward_false_image
-                print(world.game_speed)
             else:
                 world.game_speed = 2
                 fast_forward_button.image = fast_forward_true_image
-                print(world.game_speed)
-           
             
             # Spawn de enemigos
             if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
@@ -218,11 +231,14 @@ while run:
             world.process_enemies()
             world.game_speed = 1
 
-        # Dibujar botones
+        # Dibujar botones para colocar torretas
+        # Para el boton de la torreta, mostrar el costo de la torreta y dibujar el boton
+        draw_text(str(c.BUY_COST), text_font, "grey100", c.SCREEN_WIDTH + 215, 135)
+        screen.blit(coin_image, (c.SCREEN_WIDTH + 260, 130))
         if turret_buy_button.draw(screen):
             placing_turrets = True
         
-        #Si la colocacion de la torre es correcta, crear la torre
+        #Si la colocacion de la torreta es correcta, crear la torreta
         if placing_turrets == True:
             #Cursor en la torre
             cursor_rect = cursor_turret.get_rect()
@@ -237,6 +253,9 @@ while run:
         if selected_turret:
             # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
             if selected_turret.upgrade_level < c.TURRET_LEVELS:
+                # Mostrar el costo de la mejora
+                draw_text(str(c.UPGRADE_COST), text_font, "grey100", c.SCREEN_WIDTH + 215, 195)
+                screen.blit(coin_image, (c.SCREEN_WIDTH + 260, 190))
                 if upgrade_button.draw(screen):
                     # Verificar Si hay suficiente dinero para mejorar la torreta
                     if world.money >= c.UPGRADE_COST:
