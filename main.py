@@ -19,6 +19,7 @@ pg.display.set_caption("Tower Defence")
 #Variables del Juego
 game_over = False
 game_outcome = 0 # -1 Si pierde, 1 si gana
+game_speed_toggle = False
 level_started = False
 last_enemy_spawn = pg.time.get_ticks()
 placing_turrets = False
@@ -46,7 +47,8 @@ cancel_image = pg.image.load('imagen/botones/cancel.png').convert_alpha()
 upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret.png').convert_alpha()
 begin_image = pg.image.load('imagen/botones/begin.png').convert_alpha()
 restart_image = pg.image.load('imagen/botones/restart.png').convert_alpha()
-fast_forward_image = pg.image.load('imagen/botones/fast_forward.png').convert_alpha()
+fast_forward_false_image = pg.image.load('imagen/botones/fast_forward_false.png').convert_alpha()
+fast_forward_true_image = pg.image.load('imagen/botones/fast_forward_true.png').convert_alpha()
 
 # Imagen de la torreta
 turret_spritesheets = []
@@ -122,7 +124,7 @@ cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
 restart_button = Button(310, 300, restart_image, True)
-fast_forward_button = Button(c.SCREEN_WIDTH + 50, 300, fast_forward_image, False)
+fast_forward_button = Button(c.SCREEN_WIDTH + 50, 300, fast_forward_false_image, False)
 
 run = True
 while run:
@@ -183,10 +185,18 @@ while run:
                 level_started = True
         else:
             # Opcion de Aceleracion de juego
-            world.game_speed = 1
             if fast_forward_button.draw(screen):
+                game_speed_toggle = not game_speed_toggle
+
+            if game_speed_toggle:
+                world.game_speed = 1
+                fast_forward_button.image = fast_forward_false_image
+                print(world.game_speed)
+            else:
                 world.game_speed = 2
-            print(world.game_speed)
+                fast_forward_button.image = fast_forward_true_image
+                print(world.game_speed)
+           
             
             # Spawn de enemigos
             if pg.time.get_ticks() - last_enemy_spawn > c.SPAWN_COOLDOWN:
@@ -206,6 +216,7 @@ while run:
             last_enemy_spawn = pg.time.get_ticks()
             world.reset_level()
             world.process_enemies()
+            world.game_speed = 1
 
         # Dibujar botones
         if turret_buy_button.draw(screen):
@@ -234,7 +245,7 @@ while run:
     else:
         pg.draw.rect(screen, "dodgerblue", (200, 200, 400, 200), border_radius = 30)
         if game_outcome == -1:
-            draw_text("FIN DEL JUEGO", large_font, "grey0", 310, 230)
+            draw_text("FIN DEL JUEGO", large_font, "grey0", 270, 230)
         elif game_outcome == 1:
             draw_text("¡HAS GANADO!", large_font, "grey0", 315, 230)
         # Reiniciar el nivel
