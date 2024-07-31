@@ -4,7 +4,7 @@ import constants as c
 from turret_data import TURRET_DATA
 
 class Turret(pg.sprite.Sprite):
-    def __init__(self, sprite_sheets, tile_x, tile_y):
+    def __init__(self, sprite_sheets, tile_x, tile_y, shot_fx):
         pg.sprite.Sprite.__init__(self)
         self.upgrade_level = 1
         self.range = TURRET_DATA[self.upgrade_level - 1].get("range")
@@ -20,6 +20,9 @@ class Turret(pg.sprite.Sprite):
         # Calcular el centro de las coordenadas
         self.x = (self.tile_x + 0.5)* c.TILE_SIZE
         self.y = (self.tile_y + 0.5)* c.TILE_SIZE
+
+        # Agregar efecto de sonido
+        self.shot_fx = shot_fx
 
         # Animacion de la variable
         self.sprite_sheets = sprite_sheets
@@ -77,6 +80,8 @@ class Turret(pg.sprite.Sprite):
                     self.angle = math.degrees(math.atan2(-y_dist, x_dist))
                     # Dañar al enemigo
                     self.target.health -= c.DAMAGE
+                    # Cargar el sonido
+                    self.shot_fx.play()
                     break
 
     def play_animation(self):

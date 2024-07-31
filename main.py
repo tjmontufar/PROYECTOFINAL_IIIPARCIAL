@@ -50,6 +50,10 @@ restart_image = pg.image.load('imagen/botones/restart.png').convert_alpha()
 fast_forward_false_image = pg.image.load('imagen/botones/fast_forward_false.png').convert_alpha()
 fast_forward_true_image = pg.image.load('imagen/botones/fast_forward_true.png').convert_alpha()
 
+# Cargar efectos de sonido
+shot_fx = pg.mixer.Sound('audio/shot.wav')
+shot_fx.set_volume(0.5)
+
 # Interfaz grafica
 heart_image = pg.image.load('imagen/iconos/heart.png').convert_alpha()
 coin_image = pg.image.load('imagen/iconos/coin.png').convert_alpha()
@@ -112,7 +116,7 @@ def create_turret(mouse_pos):
 
         #Si la torre no es una torre no valida, no crearla
         if space_is_free == True:
-            new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y)
+            new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y, shot_fx)
             turret_group.add(new_turret)
 
             # Deducir el costo de la torreta
