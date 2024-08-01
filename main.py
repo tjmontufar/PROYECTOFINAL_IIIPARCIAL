@@ -185,7 +185,7 @@ while run:
         #               SECCION DE ACTUALIZACION
         ##########################################################
 
-        elif game_over == False:
+        elif not game_over:
             # Revisar si el juagador ha perdido
             if world.health <= 0:
                 game_over = True
@@ -223,9 +223,9 @@ while run:
             ##########################################################
 
             # Verificar si el jugador ha perdido
-            if game_over == False:
+            if not game_over:
                 # Revisar si el juego ha iniciado o no
-                if level_started == False:
+                if not level_started:
                     if begin_button.draw(screen):
                         level_started = True
                 else:
@@ -316,26 +316,26 @@ while run:
                 if restart_level_button.draw(screen):
                     game_paused = True
                     confirm_restart = True
-            else:
-                pg.draw.rect(screen, "dodgerblue", (200, 200, 400, 200), border_radius = 30)
-                if game_outcome == -1:
-                    draw_text("FIN DEL JUEGO", large_font, "grey0", 270, 230)
-                elif game_outcome == 1:
-                    draw_text("¡HAS GANADO!", large_font, "grey0", 315, 230)
-                # Reiniciar el nivel
-                if restart_button.draw(screen):
-                    # Restablecer las variables de juego a su posicion inicial
-                    game_over = False
-                    level_started = False
-                    placing_turrets = False
-                    selected_turret = None
-                    last_enemy_spawn = pg.time.get_ticks()
-                    world = World(world_data, map_image)
-                    world.process_data()
-                    world.process_enemies()
-                    # Limpiar los grupos de enemigos y torretas
-                    enemy_group.empty()
-                    turret_group.empty()
+        else:
+            pg.draw.rect(screen, "dodgerblue", (200, 200, 400, 200), border_radius = 30)
+            if game_outcome == -1:
+                draw_text("FIN DEL JUEGO", large_font, "grey0", 270, 230)
+            elif game_outcome == 1:
+                draw_text("¡HAS GANADO!", large_font, "grey0", 315, 230)
+            # Reiniciar el nivel
+            if restart_button.draw(screen):
+                # Restablecer las variables de juego a su posicion inicial
+                game_over = False
+                level_started = False
+                placing_turrets = False
+                selected_turret = None
+                last_enemy_spawn = pg.time.get_ticks()
+                world = World(world_data, map_image)
+                world.process_data()
+                world.process_enemies()
+                # Limpiar los grupos de enemigos y torretas
+                enemy_group.empty()
+                turret_group.empty()
     else:
         # Confirmar la salida del juego
         if confirm_exit:
