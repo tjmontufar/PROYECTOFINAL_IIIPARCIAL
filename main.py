@@ -27,6 +27,8 @@ level_started = False
 last_enemy_spawn = pg.time.get_ticks()
 placing_turrets = False
 selected_turret = None
+confirm_exit = False
+confirm_restart = False
 
 ##########################################################
 #               CARGA DE IMAGENES
@@ -60,6 +62,9 @@ fast_forward_true_image = pg.image.load('imagen/botones/fast_forward_true.png').
 exit_image = pg.image.load('imagen/botones/exit.png').convert_alpha()
 yes_image = pg.image.load('imagen/botones/yes.png').convert_alpha()
 not_image = pg.image.load('imagen/botones/no.png').convert_alpha()
+pause_image = pg.image.load('imagen/botones/pause.png').convert_alpha()
+continue_image = pg.image.load('imagen/botones/continue.png').convert_alpha()
+restart_level_image = pg.image.load('imagen/botones/restart_level.png').convert_alpha()
 
 # Cargar efectos de sonido
 shot_fx = pg.mixer.Sound('audio/shot.wav')
@@ -161,7 +166,9 @@ begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
 restart_button = Button(310, 300, restart_image, True)
 fast_forward_button = Button(c.SCREEN_WIDTH + 60, 300, fast_forward_false_image, False)
 play_button = Button((1020 // 2) - 75, 400, play_image, True)
-exit_button = Button((1020 // 2) - 75, 500, exit_image, True)
+exit_button = Button(965, 5, exit_image, True)
+pause_button = Button(915, 5, pause_image, True)
+restart_level_button = Button(965, 55, restart_level_image, True)
 
 run = True
 while run:
@@ -299,6 +306,16 @@ while run:
                 # Revisar si el boton de salir es presionado
                 if exit_button.draw(screen):
                     game_paused = True
+                    confirm_exit = True
+                
+                # Revisar si el boton de pausa es presionado
+                if pause_button.draw(screen):
+                    game_paused = True
+                
+                # Revisar si el boton de reinicio es presionado
+                if restart_level_button.draw(screen):
+                    game_paused = True
+                    confirm_restart = True
             else:
                 pg.draw.rect(screen, "dodgerblue", (200, 200, 400, 200), border_radius = 30)
                 if game_outcome == -1:
@@ -321,7 +338,7 @@ while run:
                     turret_group.empty()
     else:
         # Confirmar la salida del juego
-        if game_paused:
+        if confirm_exit:
             pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
             draw_text("¿QUIERES SALIR?", large_font, "grey0", 250, 240)
             yes_button = Button(275, 320, yes_image, True)
@@ -346,7 +363,38 @@ while run:
             if no_button.draw(screen):
                 confirm_exit = False
                 game_paused = False
+        # Confirmar el reinicio del nivel
+        elif confirm_restart:
+            pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
+            draw_text("¿REINICIAR NIVEL?", large_font, "grey0", 250, 240)
+            yes_button = Button(275, 320, yes_image, True)
+            no_button = Button(425, 320, not_image, True)
 
+            if yes_button.draw(screen):
+                game_over = False
+                confirm_restart = False
+                game_paused = False
+                # Restablecer el juego a su posición inicial
+                level_started = False
+                placing_turrets = False
+                selected_turret = None
+                last_enemy_spawn = pg.time.get_ticks()
+                world = World(world_data, map_image)
+                world.process_data()
+                world.process_enemies()
+                enemy_group.empty()
+                turret_group.empty()
+
+            if no_button.draw(screen):
+                confirm_restart = False
+                game_paused = False
+        # Pausar el juego
+        elif game_paused:
+            pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
+            draw_text("JUEGO PAUSADO", large_font, "grey0", 250, 240)
+            continue_button = Button(275, 320, continue_image, True)
+            if continue_button.draw(screen):
+                game_paused = False
 
     # Manejo del evento
     for event in pg.event.get():
