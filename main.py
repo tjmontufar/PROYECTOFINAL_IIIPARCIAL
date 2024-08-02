@@ -18,6 +18,8 @@ pg.display.set_caption("Tower Defence")
 
 #Variables del Juego
 in_menu = True
+in_background = False
+in_credits = False
 game_over = False
 game_outcome = 0 # -1 Si pierde, 1 si gana
 game_speed_toggle = False
@@ -29,6 +31,7 @@ placing_turrets = False
 selected_turret = None
 confirm_exit = False
 confirm_restart = False
+show_logo = True
 
 ##########################################################
 #               CARGA DE IMAGENES
@@ -38,6 +41,10 @@ confirm_restart = False
 map_image = pg.image.load('imagen/niveles/level.png').convert_alpha()
 # Menu principal
 main_menu_image = pg.image.load('imagen/gui/main_menu.png').convert_alpha()
+# Fondo e informacion de juego
+background_image = pg.image.load('imagen/gui/background.png').convert_alpha()
+sinopsis_image = pg.image.load('imagen/gui/sinopsis.png').convert_alpha()
+credits_image = pg.image.load('imagen/gui/creditos.png').convert_alpha()
 
 # Enemigo
 enemy_images = {
@@ -68,15 +75,25 @@ continue_image = pg.image.load('imagen/botones/continue.png').convert_alpha()
 restart_level_image = pg.image.load('imagen/botones/restart_level.png').convert_alpha()
 about_image = pg.image.load('imagen/botones/about.png').convert_alpha()
 quit_game_image = pg.image.load('imagen/botones/quit_game.png').convert_alpha()
+next_image = pg.image.load('imagen/botones/next.png').convert_alpha()
+close_image = pg.image.load('imagen/botones/close.png').convert_alpha()
 
 # Cargar efectos de sonido
 shot_fx = pg.mixer.Sound('audio/shot.wav')
+colocar_fx = pg.mixer.Sound('audio/colocar_torre.mp3')
+mejorar_fx = pg.mixer.Sound('audio/mejorar_torre.mp3')
+vender_fx = pg.mixer.Sound('audio/vender_torre.mp3')
+click_fx = pg.mixer.Sound('audio/click.mp3')
 shot_fx.set_volume(0.5)
+colocar_fx.set_volume(0.5)
+mejorar_fx.set_volume(0.5)
+vender_fx.set_volume(0.5)
+click_fx.set_volume(0.5)
 
 # Interfaz grafica
 heart_image = pg.image.load('imagen/iconos/heart.png').convert_alpha()
 coin_image = pg.image.load('imagen/iconos/coin.png').convert_alpha()
-logo_image = pg.image.load('imagen/iconos/logo.png').convert_alpha()
+logo_image = pg.image.load('imagen/iconos/game_logo.png').convert_alpha()
 
 # Imagen de la torreta
 turret_spritesheets = []
@@ -93,8 +110,9 @@ with open('imagen/niveles/level.tmj') as file:
     world_data = json.load(file)
 
 # Cargar fuentes para mostrar texto en pantalla
-text_font = pg.font.SysFont("Consolas", 24, bold=True)
-large_font = pg.font.SysFont("Consolas", 36)
+font_path = 'fuente/Capture_it.ttf'
+text_font = pg.font.Font(font_path, 24)
+large_font = pg.font.Font(font_path, 36)
 
 # Funciones para colocar texto en pantalla
 def draw_text(text, font, text_col, x, y):
@@ -103,13 +121,14 @@ def draw_text(text, font, text_col, x, y):
 
 def display_data():
     # Dibujar el panel
-    pg.draw.rect(screen, "maroon", (c.SCREEN_WIDTH, 0, c.SIDE_PANEL, c.SCREEN_HEIGHT))
+    pg.draw.rect(screen, "grey40", (c.SCREEN_WIDTH, 0, c.SIDE_PANEL, c.SCREEN_HEIGHT))
     pg.draw.rect(screen, "grey0", (c.SCREEN_WIDTH, 0, c.SIDE_PANEL, 400), 2)
-    screen.blit(logo_image, (c.SCREEN_WIDTH, 400))
+    if show_logo:
+        screen.blit(logo_image, (c.SCREEN_WIDTH, 400))
     # Dibujar iconos
 
     # Mostrar textos en pantalla
-    draw_text("NIVEL: " + str(world.level), text_font, "grey100", c.SCREEN_WIDTH + 10, 10) # Nivel
+    draw_text("NIVEL: " + str(world.level) + " / " + str(c.TOTAL_LEVELS), text_font, "grey100", c.SCREEN_WIDTH + 10, 10) # Nivel
     screen.blit(heart_image, (c.SCREEN_WIDTH + 10, 35)) # Icono de salud
     draw_text(str(world.health), text_font, "grey100", c.SCREEN_WIDTH + 50, 40) # Salud
     screen.blit(coin_image, (c.SCREEN_WIDTH + 10, 65)) # Icono de dinero
@@ -137,6 +156,7 @@ def create_turret(mouse_pos):
         if space_is_free == True:
             new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y, shot_fx)
             turret_group.add(new_turret)
+            colocar_fx.play()
 
             # Deducir el costo de la torreta
             world.money -= c.BUY_COST
@@ -162,20 +182,21 @@ enemy_group = pg.sprite.Group()
 turret_group = pg.sprite.Group()
 
 # Crear botones
-turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, True)
-cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
-upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
-sell_turret_button = Button(c.SCREEN_WIDTH + 5, 240, sell_turret_image, True)
-begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
-restart_button = Button(310, 300, restart_image, True)
-fast_forward_button = Button(c.SCREEN_WIDTH + 60, 300, fast_forward_false_image, False)
-play_button = Button((1020 // 2) - 75, 400, play_image, True)
-about_game_button = Button((1020 // 2) - 75, 465, about_image, True)
-quit_game_button = Button((1020 // 2) - 75, 530, quit_game_image, True)
-exit_button = Button(965, 5, exit_image, True)
-pause_button = Button(915, 5, pause_image, True)
-restart_level_button = Button(965, 55, restart_level_image, True)
-
+turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, click_fx, True)
+cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, click_fx, True)
+upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, "", True)
+sell_turret_button = Button(c.SCREEN_WIDTH + 5, 240, sell_turret_image, "", True)
+begin_button = Button(c.SCREEN_WIDTH + 60, 315, begin_image, click_fx, True)
+restart_button = Button(310, 310, restart_image, click_fx, True)
+fast_forward_button = Button(c.SCREEN_WIDTH + 60, 315, fast_forward_false_image, click_fx, False)
+play_button = Button((1020 // 2) - 75, 400, play_image, click_fx, True)
+next_button = Button(630, 450, next_image, click_fx, True)
+about_game_button = Button((1020 // 2) - 75, 465, about_image, click_fx, True)
+quit_game_button = Button((1020 // 2) - 75, 530, quit_game_image, click_fx, True)
+exit_button = Button(965, 5, exit_image, click_fx, True)
+pause_button = Button(910, 5, pause_image, click_fx, True)
+restart_level_button = Button(965, 60, restart_level_image, click_fx, True)
+close_button = Button(770, 175, close_image, click_fx, True)
 
 run = True
 while run:
@@ -187,11 +208,26 @@ while run:
             screen.blit(main_menu_image, (0, 0))
             if play_button.draw(screen):
                 in_menu = False
+                in_background = True
             if about_game_button.draw(screen):
-                pass
+                in_menu = False
+                in_credits = True
             if quit_game_button.draw(screen):
                 run = False
-
+        elif in_background:
+            screen.blit(background_image, (0, 0))
+            # Dibujar la sinopsis
+            screen.blit(sinopsis_image, ((1020 // 2) - (600 // 2), (720 // 2) - (350 // 2)))
+            # Avanzar a la siguiente ventana
+            if next_button.draw(screen):
+                in_background = False
+        elif in_credits:
+            screen.blit(background_image, (0, 0))
+            screen.blit(credits_image, ((1020 // 2) - (600 // 2), (720 // 2) - (350 // 2)))
+            # Cerrar la ventana de creditos
+            if close_button.draw(screen):
+                in_credits = False
+                in_menu = True
         ##########################################################
         #               SECCION DE ACTUALIZACION
         ##########################################################
@@ -298,6 +334,10 @@ while run:
                 
                 # Si la torreta es seleccionada, entonces mostrar el boton de mejora
                 if selected_turret:
+                    # Mostrar el nivel en que se encuentra la torreta
+                    pg.draw.rect(screen, "maroon", (c.SCREEN_WIDTH, 400, 300, 320))
+                    draw_text("TORRETA NIVEL " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 410)
+                    show_logo = False
                     # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
                     if selected_turret.upgrade_level < c.TURRET_LEVELS:
                         # Mostrar el costo de la mejora
@@ -312,10 +352,11 @@ while run:
                             # Verificar Si hay suficiente dinero para mejorar la torreta
                             if world.money >= c.UPGRADE_COST:
                                 selected_turret.upgrade()
+                                mejorar_fx.play()
                                 world.money -= c.UPGRADE_COST
                     # Calcular el monto a devolver al vender la torreta
                     base_value = c.BUY_COST
-                    upgrade_cost = c.UPGRADE_COST * (turret.upgrade_level - 1)
+                    upgrade_cost = c.UPGRADE_COST * (selected_turret.upgrade_level - 1)
                     sell_value = (base_value + upgrade_cost) // 2
                     # Mostrar la devolucion de dinero al vender la torreta
                     draw_text(str(sell_value), text_font, "grey100", c.SCREEN_WIDTH + 215, 255)
@@ -324,7 +365,10 @@ while run:
                     if sell_turret_button.draw(screen):
                         world.money += sell_value
                         turret_group.remove(selected_turret)
+                        vender_fx.play()
                         selected_turret = None
+                else:
+                    show_logo = True
 
                 # Revisar si el boton de salir es presionado
                 if exit_button.draw(screen):
@@ -340,11 +384,11 @@ while run:
                     game_paused = True
                     confirm_restart = True
         else:
-            pg.draw.rect(screen, "dodgerblue", (200, 200, 400, 200), border_radius = 30)
+            pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
             if game_outcome == -1:
-                draw_text("FIN DEL JUEGO", large_font, "grey0", 270, 230)
+                draw_text("FIN DEL JUEGO", large_font, "grey0", 285, 240)
             elif game_outcome == 1:
-                draw_text("¡HAS GANADO!", large_font, "grey0", 315, 230)
+                draw_text("¡HAS GANADO!", large_font, "grey0", 285, 240)
             # Reiniciar el nivel
             if restart_button.draw(screen):
                 # Restablecer las variables de juego a su posicion inicial
@@ -363,9 +407,9 @@ while run:
         # Confirmar la salida del juego
         if confirm_exit:
             pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
-            draw_text("¿QUIERES SALIR?", large_font, "grey0", 250, 240)
-            yes_button = Button(275, 320, yes_image, True)
-            no_button = Button(425, 320, not_image, True)
+            draw_text("¿QUIERES SALIR?", large_font, "grey0", 270, 240)
+            yes_button = Button(275, 320, yes_image, click_fx, True)
+            no_button = Button(425, 320, not_image, click_fx, True)
 
             if yes_button.draw(screen):
                 in_menu = True
@@ -389,9 +433,9 @@ while run:
         # Confirmar el reinicio del nivel
         elif confirm_restart:
             pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
-            draw_text("¿REINICIAR NIVEL?", large_font, "grey0", 250, 240)
-            yes_button = Button(275, 320, yes_image, True)
-            no_button = Button(425, 320, not_image, True)
+            draw_text("¿REINICIAR NIVEL?", large_font, "grey0", 255, 240)
+            yes_button = Button(275, 320, yes_image, click_fx, True)
+            no_button = Button(425, 320, not_image, click_fx, True)
 
             if yes_button.draw(screen):
                 game_over = False
@@ -414,8 +458,8 @@ while run:
         # Pausar el juego
         elif game_paused:
             pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
-            draw_text("JUEGO PAUSADO", large_font, "grey0", 250, 240)
-            continue_button = Button(275, 320, continue_image, True)
+            draw_text("JUEGO PAUSADO", large_font, "grey0", 270, 240)
+            continue_button = Button(325, 320, continue_image, click_fx, True)
             if continue_button.draw(screen):
                 game_paused = False
 

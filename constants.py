@@ -10,7 +10,7 @@ FPS = 60
 # Constantes de salud y dinero
 HEALTH = 100
 MONEY = 650
-TOTAL_LEVELS = 1
+TOTAL_LEVELS = 15
 
 # Constantes de enemigos
 SPAWN_COOLDOWN = 400
