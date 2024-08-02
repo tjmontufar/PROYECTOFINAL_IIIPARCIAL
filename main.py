@@ -37,7 +37,7 @@ confirm_restart = False
 # Mapa
 map_image = pg.image.load('imagen/niveles/level.png').convert_alpha()
 # Menu principal
-main_menu_image = pg.image.load('imagen/niveles/main_menu.png').convert_alpha()
+main_menu_image = pg.image.load('imagen/gui/main_menu.png').convert_alpha()
 
 # Enemigo
 enemy_images = {
@@ -55,6 +55,7 @@ buy_turret_false_image = pg.image.load('imagen/botones/buy_turret_false.png').co
 cancel_image = pg.image.load('imagen/botones/cancel.png').convert_alpha()
 upgrade_turret_image = pg.image.load('imagen/botones/upgrade_turret_true.png').convert_alpha()
 upgrade_turret_false_image = pg.image.load('imagen/botones/upgrade_turret_false.png').convert_alpha()
+sell_turret_image = pg.image.load('imagen/botones/sell_turret.png').convert_alpha()
 begin_image = pg.image.load('imagen/botones/begin.png').convert_alpha()
 restart_image = pg.image.load('imagen/botones/restart.png').convert_alpha()
 fast_forward_false_image = pg.image.load('imagen/botones/fast_forward_false.png').convert_alpha()
@@ -65,6 +66,8 @@ not_image = pg.image.load('imagen/botones/no.png').convert_alpha()
 pause_image = pg.image.load('imagen/botones/pause.png').convert_alpha()
 continue_image = pg.image.load('imagen/botones/continue.png').convert_alpha()
 restart_level_image = pg.image.load('imagen/botones/restart_level.png').convert_alpha()
+about_image = pg.image.load('imagen/botones/about.png').convert_alpha()
+quit_game_image = pg.image.load('imagen/botones/quit_game.png').convert_alpha()
 
 # Cargar efectos de sonido
 shot_fx = pg.mixer.Sound('audio/shot.wav')
@@ -162,13 +165,17 @@ turret_group = pg.sprite.Group()
 turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, True)
 cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, True)
+sell_turret_button = Button(c.SCREEN_WIDTH + 5, 240, sell_turret_image, True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 300, begin_image, True)
 restart_button = Button(310, 300, restart_image, True)
 fast_forward_button = Button(c.SCREEN_WIDTH + 60, 300, fast_forward_false_image, False)
 play_button = Button((1020 // 2) - 75, 400, play_image, True)
+about_game_button = Button((1020 // 2) - 75, 465, about_image, True)
+quit_game_button = Button((1020 // 2) - 75, 530, quit_game_image, True)
 exit_button = Button(965, 5, exit_image, True)
 pause_button = Button(915, 5, pause_image, True)
 restart_level_button = Button(965, 55, restart_level_image, True)
+
 
 run = True
 while run:
@@ -180,6 +187,10 @@ while run:
             screen.blit(main_menu_image, (0, 0))
             if play_button.draw(screen):
                 in_menu = False
+            if about_game_button.draw(screen):
+                pass
+            if quit_game_button.draw(screen):
+                run = False
 
         ##########################################################
         #               SECCION DE ACTUALIZACION
@@ -302,6 +313,18 @@ while run:
                             if world.money >= c.UPGRADE_COST:
                                 selected_turret.upgrade()
                                 world.money -= c.UPGRADE_COST
+                    # Calcular el monto a devolver al vender la torreta
+                    base_value = c.BUY_COST
+                    upgrade_cost = c.UPGRADE_COST * (turret.upgrade_level - 1)
+                    sell_value = (base_value + upgrade_cost) // 2
+                    # Mostrar la devolucion de dinero al vender la torreta
+                    draw_text(str(sell_value), text_font, "grey100", c.SCREEN_WIDTH + 215, 255)
+                    screen.blit(coin_image, (c.SCREEN_WIDTH + 260, 250))
+                    # Mostrar el boton de vender torreta
+                    if sell_turret_button.draw(screen):
+                        world.money += sell_value
+                        turret_group.remove(selected_turret)
+                        selected_turret = None
 
                 # Revisar si el boton de salir es presionado
                 if exit_button.draw(screen):
