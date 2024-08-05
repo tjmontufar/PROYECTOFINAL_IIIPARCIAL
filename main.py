@@ -362,25 +362,32 @@ while run:
                     draw_text(str(selected_turret.kill_count), text_font, "grey100", c.SCREEN_WIDTH + 10, 640)
 
                     show_logo = False
+                    comision = 0
                     # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
                     if selected_turret.upgrade_level < c.TURRET_LEVELS:
                         # Mostrar el costo de la mejora
-                        draw_text(str(c.UPGRADE_COST), text_font, "grey100", c.SCREEN_WIDTH + 215, 195)
+                        if selected_turret.upgrade_level == 2:
+                            comision = 50
+                        elif selected_turret.upgrade_level == 3:
+                            comision = 100
+                        # Calcular el costo total si la torreta se encuentra en un nivel mayor
+                        costo_total = c.UPGRADE_COST + comision
+                        draw_text(str(costo_total), text_font, "grey100", c.SCREEN_WIDTH + 215, 195)
                         screen.blit(coin_image, (c.SCREEN_WIDTH + 260, 190))
                         # Actualizar la imagen del botón de mejora de torretas si hay o no suficiente dinero
-                        if world.money >= c.UPGRADE_COST:
+                        if world.money >= costo_total:
                             upgrade_button.image = upgrade_turret_image
                         else:
                             upgrade_button.image = upgrade_turret_false_image
                         if upgrade_button.draw(screen):
                             # Verificar Si hay suficiente dinero para mejorar la torreta
-                            if world.money >= c.UPGRADE_COST:
+                            if world.money >= costo_total:
                                 selected_turret.upgrade()
                                 mejorar_fx.play()
-                                world.money -= c.UPGRADE_COST
+                                world.money -= costo_total
                     # Calcular el monto a devolver al vender la torreta
                     base_value = c.BUY_COST
-                    upgrade_cost = c.UPGRADE_COST * (selected_turret.upgrade_level - 1)
+                    upgrade_cost = costo_total * (selected_turret.upgrade_level - 1)
                     sell_value = (base_value + upgrade_cost) // 2
                     # Mostrar la devolucion de dinero al vender la torreta
                     draw_text(str(sell_value), text_font, "grey100", c.SCREEN_WIDTH + 215, 255)

@@ -27,24 +27,14 @@ class World():
                 for obj in layer["objects"]:
                     waypoint_data = obj["polyline"]
                     self.process_waypoints(waypoint_data)
-
-    
+ 
     def process_waypoints(self, data):
         # Iterar sobre los waypoints para extraer coordenadas X e Y
         for point in data:
             temp_x = point.get("x")
             temp_y = point.get("y")
             self.waypoints.append((temp_x,temp_y))
-        
-    # def process_enemies(self):
-    #     enemies = ENEMY_SPAWN_DATA[self.level - 1]
-    #     for enemy_type in enemies:
-    #         enemies_to_spawn = enemies[enemy_type]
-    #         for enemy in range(enemies_to_spawn):
-    #             self.enemy_list.append(enemy_type)
 
-    #     # Mezclar la lista de enemigos
-    #     random.shuffle(self.enemy_list)
     def process_enemies(self):
         if 1 <= self.level <= c.TOTAL_LEVELS:
             try:
