@@ -32,6 +32,10 @@ selected_turret = None
 confirm_exit = False
 confirm_restart = False
 show_logo = True
+nivel = 0
+kill_count = 0
+missed_count = 0
+inicio_nivel = False
 
 ##########################################################
 #               CARGA DE IMAGENES
@@ -45,6 +49,10 @@ main_menu_image = pg.image.load('imagen/gui/main_menu.png').convert_alpha()
 background_image = pg.image.load('imagen/gui/background.png').convert_alpha()
 sinopsis_image = pg.image.load('imagen/gui/sinopsis.png').convert_alpha()
 credits_image = pg.image.load('imagen/gui/creditos.png').convert_alpha()
+# Flechas de direccion
+direccion_image = pg.image.load('imagen/iconos/direcciones.png').convert_alpha()
+comienzo = pg.transform.rotate(direccion_image, -90)
+meta = pg.transform.rotate(direccion_image, -180)
 
 # Enemigo
 enemy_images = {
@@ -125,10 +133,9 @@ def display_data():
     pg.draw.rect(screen, "grey0", (c.SCREEN_WIDTH, 0, c.SIDE_PANEL, 400), 2)
     if show_logo:
         screen.blit(logo_image, (c.SCREEN_WIDTH, 400))
-    # Dibujar iconos
 
-    # Mostrar textos en pantalla
-    draw_text("NIVEL: " + str(world.level) + " / " + str(c.TOTAL_LEVELS), text_font, "grey100", c.SCREEN_WIDTH + 10, 10) # Nivel
+    # Dibujar iconos
+    draw_text("NIVEL: " + str(world.level - nivel) + " / " + str(c.TOTAL_LEVELS), text_font, "grey100", c.SCREEN_WIDTH + 10, 10) # Nivel
     screen.blit(heart_image, (c.SCREEN_WIDTH + 10, 35)) # Icono de salud
     draw_text(str(world.health), text_font, "grey100", c.SCREEN_WIDTH + 50, 40) # Salud
     screen.blit(coin_image, (c.SCREEN_WIDTH + 10, 65)) # Icono de dinero
@@ -187,7 +194,7 @@ cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, click_fx, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, "", True)
 sell_turret_button = Button(c.SCREEN_WIDTH + 5, 240, sell_turret_image, "", True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 315, begin_image, click_fx, True)
-restart_button = Button(310, 310, restart_image, click_fx, True)
+restart_button = Button(310, 370, restart_image, click_fx, True)
 fast_forward_button = Button(c.SCREEN_WIDTH + 60, 315, fast_forward_false_image, click_fx, False)
 play_button = Button((1020 // 2) - 75, 400, play_image, click_fx, True)
 next_button = Button(630, 450, next_image, click_fx, True)
@@ -242,6 +249,7 @@ while run:
             if world.level > c.TOTAL_LEVELS:
                 game_over = True
                 game_outcome = 1 # Ganó
+                nivel = 1
 
             # Actualizar los grupos
             enemy_group.update(world) 
@@ -269,12 +277,18 @@ while run:
             #               LOGICA DEL NIVEL
             ##########################################################
 
+            # Mostrar flechas de direccion
+            if not inicio_nivel:
+                screen.blit(comienzo, (607, 20))
+                screen.blit(meta, (20, 607))
+
             # Verificar si el jugador ha perdido
             if not game_over:
                 # Revisar si el juego ha iniciado o no
                 if not level_started:
                     if begin_button.draw(screen):
                         level_started = True
+                        inicio_nivel = True
                 else:
                     # Opcion de Aceleracion de juego
                     if fast_forward_button.draw(screen):
@@ -303,6 +317,8 @@ while run:
                     world.level += 1
                     level_started = False
                     last_enemy_spawn = pg.time.get_ticks()
+                    kill_count += world.killed_enemies
+                    missed_count += world.missed_enemies
                     world.reset_level()
                     world.process_enemies()
                     world.game_speed = 1
@@ -336,7 +352,12 @@ while run:
                 if selected_turret:
                     # Mostrar el nivel en que se encuentra la torreta
                     pg.draw.rect(screen, "maroon", (c.SCREEN_WIDTH, 400, 300, 320))
-                    draw_text("TORRETA NIVEL " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 410)
+                    draw_text("TORRETA", text_font, "grey100", c.SCREEN_WIDTH + 10, 410)
+                    draw_text("NIVEL " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 450)
+                    # Barra para mostrar el nivel en que se encuentra la torreta
+                    pg.draw.rect(screen, "grey100", (c.SCREEN_WIDTH + 10, 480, 280, 30))
+                    pg.draw.rect(screen, "green", (c.SCREEN_WIDTH + 10, 480, (280 // c.TURRET_LEVELS) * selected_turret.upgrade_level, 30))
+
                     show_logo = False
                     # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
                     if selected_turret.upgrade_level < c.TURRET_LEVELS:
@@ -384,11 +405,16 @@ while run:
                     game_paused = True
                     confirm_restart = True
         else:
-            pg.draw.rect(screen, "grey", (200, 200, 400, 200), border_radius = 30)
+            pg.draw.rect(screen, "grey", (200, 200, 400, 250), border_radius = 30)
             if game_outcome == -1:
-                draw_text("FIN DEL JUEGO", large_font, "grey0", 285, 240)
+                draw_text("FIN DEL JUEGO", large_font, "grey0", 285, 220)
+                draw_text("HAS PERDIDO LA BATALLA", text_font, "grey0", 255, 270)
+                draw_text("PUNTUACION: " + str((kill_count + world.health)), text_font, "grey0", 255, 310)
             elif game_outcome == 1:
-                draw_text("¡HAS GANADO!", large_font, "grey0", 285, 240)
+                draw_text("¡HAS GANADO!", large_font, "grey0", 285, 220)
+                draw_text("SOLDADOS MUERTOS: " + str(kill_count), text_font, "grey0", 255, 270)
+                draw_text("SOLDADOS FALTANTES: " + str(missed_count), text_font, "grey0", 255, 300)
+                draw_text("PUNTUACION: " + str((kill_count + world.health)), text_font, "grey0", 255, 330)
             # Reiniciar el nivel
             if restart_button.draw(screen):
                 # Restablecer las variables de juego a su posicion inicial
@@ -396,6 +422,10 @@ while run:
                 level_started = False
                 placing_turrets = False
                 selected_turret = None
+                nivel = 0
+                kill_count = 0
+                missed_count = 0
+                inicio_nivel = False
                 last_enemy_spawn = pg.time.get_ticks()
                 world = World(world_data, map_image)
                 world.process_data()
@@ -420,6 +450,10 @@ while run:
                 level_started = False
                 placing_turrets = False
                 selected_turret = None
+                nivel = 0
+                kill_count = 0
+                missed_count = 0
+                inicio_nivel = False
                 last_enemy_spawn = pg.time.get_ticks()
                 world = World(world_data, map_image)
                 world.process_data()
@@ -445,6 +479,10 @@ while run:
                 level_started = False
                 placing_turrets = False
                 selected_turret = None
+                nivel = 0
+                kill_count = 0
+                missed_count = 0
+                inicio_nivel = False
                 last_enemy_spawn = pg.time.get_ticks()
                 world = World(world_data, map_image)
                 world.process_data()
