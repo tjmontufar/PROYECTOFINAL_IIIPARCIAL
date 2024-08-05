@@ -12,6 +12,7 @@ class Turret(pg.sprite.Sprite):
         self.last_shot = pg.time.get_ticks()
         self.selected = False
         self.target = None
+        self.kill_count = 0
 
         # Posicion de la variable
         self.tile_x = tile_x
@@ -80,6 +81,9 @@ class Turret(pg.sprite.Sprite):
                     self.angle = math.degrees(math.atan2(-y_dist, x_dist))
                     # Dañar al enemigo
                     self.target.health -= c.DAMAGE
+                    # Si el enemigo ha sido eliminado, sumar al contador
+                    if self.target.health <= 0:
+                        self.kill_count += 1
                     # Cargar el sonido
                     self.shot_fx.play()
                     break

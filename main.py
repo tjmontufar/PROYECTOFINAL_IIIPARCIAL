@@ -352,11 +352,14 @@ while run:
                 if selected_turret:
                     # Mostrar el nivel en que se encuentra la torreta
                     pg.draw.rect(screen, "maroon", (c.SCREEN_WIDTH, 400, 300, 320))
-                    draw_text("TORRETA", text_font, "grey100", c.SCREEN_WIDTH + 10, 410)
-                    draw_text("NIVEL " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 450)
+                    screen.blit(selected_turret.original_image, (c.SCREEN_WIDTH + 10, 400))
+                    draw_text("TORRETA", text_font, "grey100", c.SCREEN_WIDTH + 10, 490)
+                    draw_text("NIVEL: " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 530)
                     # Barra para mostrar el nivel en que se encuentra la torreta
-                    pg.draw.rect(screen, "grey100", (c.SCREEN_WIDTH + 10, 480, 280, 30))
-                    pg.draw.rect(screen, "green", (c.SCREEN_WIDTH + 10, 480, (280 // c.TURRET_LEVELS) * selected_turret.upgrade_level, 30))
+                    pg.draw.rect(screen, "grey100", (c.SCREEN_WIDTH + 10, 560, 280, 30))
+                    pg.draw.rect(screen, "green", (c.SCREEN_WIDTH + 10, 560, (280 // c.TURRET_LEVELS) * selected_turret.upgrade_level, 30))
+                    draw_text("ENEMIGOS ELIMINADOS: ", text_font, "grey100", c.SCREEN_WIDTH + 10, 610)
+                    draw_text(str(selected_turret.kill_count), text_font, "grey100", c.SCREEN_WIDTH + 10, 640)
 
                     show_logo = False
                     # Si la torreta puede ser mejorada, entonces mostrar el boton de mejora
