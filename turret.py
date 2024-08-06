@@ -84,7 +84,7 @@ class Turret(pg.sprite.Sprite):
                     self.target.health -= c.DAMAGE
                     # Establecer parpadeo
                     self.target.is_flashing = True
-                    self.target.flash_timer = self.flash_duration
+                    self.target.flash_timer = self.flash_duration * 1000  # Convertir a milisegundos
                     # Si el enemigo ha sido eliminado, sumar al contador
                     if self.target.health <= 0:
                         self.kill_count += 1

@@ -25,19 +25,21 @@ class Enemy(pg.sprite.Sprite):
         self.move(world)
         self.rotate()
         self.check_alive(world)
-        # Mostrar efecto de parpadeo si el enemigo es dañado
+        self.handle_flashing(world)
+    
+    def handle_flashing(self, world):
         if self.is_flashing:
-            # Cambiar el color de sprite
-            red_tint = pg.Color(255, 0, 0, 128)  # Rojo con 50% de transparencia
-            self.image = self.original_image.copy()  # Copia la imagen original
-            self.image.fill(red_tint, special_flags=pg.BLEND_RGBA_MULT)
+            # Aplicar un tinte rojo temporalmente
+            red_tint = pg.Surface(self.image.get_size(), pg.SRCALPHA)
+            red_tint.fill((255, 0, 0, 128))  # Rojo con 50% de transparencia
+            self.image.blit(red_tint, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
             # Actualizar el temporizador de parpadeo
-            self.flash_timer -= world.game_speed * world.delta_time  # Ajustar con delta time
+            self.flash_timer -= world.delta_time * 1000  # Ajustar con delta time
             if self.flash_timer <= 0:
                 self.is_flashing = False
                 # Restaurar el color original del sprite
-                self.image = self.original_image.copy()
-
+                self.image = pg.transform.rotate(self.original_image, self.angle)
+                
     def move(self, world):
         # Calcular la dirección hacia el siguiente waypoint
         if self.target_waypoint < len(self.waypoints):

@@ -12,9 +12,6 @@ pg.init()
 import os
 os.system('cls' if os.name == 'nt' else 'clear')
 
-#Crear un reloj
-clock = pg.time.Clock()
-
 screen = pg.display.set_mode((c.SCREEN_WIDTH + c.SIDE_PANEL, c.SCREEN_HEIGHT))
 pg.display.set_caption("Tower Defence")
 
@@ -201,8 +198,8 @@ turret_group = pg.sprite.Group()
 # Crear botones
 turret_buy_button = Button(c.SCREEN_WIDTH + 30, 120, buy_turret_image, click_fx, True)
 cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, click_fx, True)
-upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, "", True)
-sell_turret_button = Button(c.SCREEN_WIDTH + 5, 240, sell_turret_image, "", True)
+upgrade_button = Button(c.SCREEN_WIDTH + 30, 180, upgrade_turret_image, "", True)
+sell_turret_button = Button(c.SCREEN_WIDTH + 30, 240, sell_turret_image, "", True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 315, begin_image, click_fx, True)
 restart_button = Button(230, 370, restart_image, click_fx, True)
 fast_forward_button = Button(c.SCREEN_WIDTH + 60, 315, fast_forward_false_image, click_fx, False)
@@ -221,10 +218,11 @@ mixer.music.load('audio/main_theme.wav')
 mixer.music.set_volume(0.5)
 mixer.music.play(-1)  # Reproducir en bucle
 
+#Crear un reloj
+clock = pg.time.Clock()
 run = True
 while run:
-    clock.tick(c.FPS)
-    dt = clock.tick(60) / 1000  # Calcular delta time
+    dt = clock.tick(c.FPS) / 1000  # Limitar FPS y calcular delta time
     world.delta_time = dt  # Pasar delta time al mundo
     # Pantalla de inicio
     if not game_paused:
@@ -371,7 +369,7 @@ while run:
                     # Mostrar el nivel en que se encuentra la torreta
                     pg.draw.rect(screen, "blue", (c.SCREEN_WIDTH, 400, 300, 320))
                     screen.blit(selected_turret.original_image, (c.SCREEN_WIDTH + 10, 400))
-                    draw_text("TORRETA", text_font, "grey100", c.SCREEN_WIDTH + 10, 490)
+                    draw_text("TORRE DE BATALLA", text_font, "grey100", c.SCREEN_WIDTH + 10, 490)
                     draw_text("NIVEL: " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 530)
                     # Barra para mostrar el nivel en que se encuentra la torreta
                     pg.draw.rect(screen, "grey100", (c.SCREEN_WIDTH + 10, 560, 280, 30))
