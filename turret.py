@@ -13,6 +13,7 @@ class Turret(pg.sprite.Sprite):
         self.selected = False
         self.target = None
         self.kill_count = 0
+        self.flash_duration = 0.1
 
         # Posicion de la variable
         self.tile_x = tile_x
@@ -81,6 +82,9 @@ class Turret(pg.sprite.Sprite):
                     self.angle = math.degrees(math.atan2(-y_dist, x_dist))
                     # Dañar al enemigo
                     self.target.health -= c.DAMAGE
+                    # Establecer parpadeo
+                    self.target.is_flashing = True
+                    self.target.flash_timer = self.flash_duration
                     # Si el enemigo ha sido eliminado, sumar al contador
                     if self.target.health <= 0:
                         self.kill_count += 1

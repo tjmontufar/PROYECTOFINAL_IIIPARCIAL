@@ -4,6 +4,8 @@ from enemy import Enemy
 from turret import Turret
 from button import Button
 from world import World
+from pygame import mixer
+import random
 import constants as c
 pg.init()
 
@@ -36,6 +38,7 @@ nivel = 0
 kill_count = 0
 missed_count = 0
 inicio_nivel = False
+volumen = True
 
 ##########################################################
 #               CARGA DE IMAGENES
@@ -85,17 +88,23 @@ about_image = pg.image.load('imagen/botones/about.png').convert_alpha()
 quit_game_image = pg.image.load('imagen/botones/quit_game.png').convert_alpha()
 next_image = pg.image.load('imagen/botones/next.png').convert_alpha()
 close_image = pg.image.load('imagen/botones/close.png').convert_alpha()
+volume_on_image = pg.image.load('imagen/botones/volume_on.png').convert_alpha()
+volume_off_image = pg.image.load('imagen/botones/volume_off.png').convert_alpha()
 
 # Cargar efectos de sonido
-shot_fx = pg.mixer.Sound('audio/shot.wav')
+disparo_1 = pg.mixer.Sound('audio/disparo_1x.mp3')
+disparo_1.set_volume(0.5)
+disparo_2 = pg.mixer.Sound('audio/disparo_2x.mp3')
+disparo_2.set_volume(0.5)
+disparo_3 = pg.mixer.Sound('audio/disparo_3x.mp3')
+disparo_3.set_volume(0.5)
 colocar_fx = pg.mixer.Sound('audio/colocar_torre.mp3')
-mejorar_fx = pg.mixer.Sound('audio/mejorar_torre.mp3')
-vender_fx = pg.mixer.Sound('audio/vender_torre.mp3')
-click_fx = pg.mixer.Sound('audio/click.mp3')
-shot_fx.set_volume(0.5)
 colocar_fx.set_volume(0.5)
+mejorar_fx = pg.mixer.Sound('audio/mejorar_torre.mp3')
 mejorar_fx.set_volume(0.5)
+vender_fx = pg.mixer.Sound('audio/vender_torre.mp3')
 vender_fx.set_volume(0.5)
+click_fx = pg.mixer.Sound('audio/click.mp3')
 click_fx.set_volume(0.5)
 
 # Interfaz grafica
@@ -161,7 +170,8 @@ def create_turret(mouse_pos):
 
         #Si la torre no es una torre no valida, no crearla
         if space_is_free == True:
-            new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y, shot_fx)
+            disparo = random.choice([disparo_1, disparo_2, disparo_3])
+            new_turret = Turret(turret_spritesheets, mouse_tile_x, mouse_tile_y, disparo)
             turret_group.add(new_turret)
             colocar_fx.play()
 
@@ -194,20 +204,28 @@ cancel_button = Button(c.SCREEN_WIDTH + 50, 180, cancel_image, click_fx, True)
 upgrade_button = Button(c.SCREEN_WIDTH + 5, 180, upgrade_turret_image, "", True)
 sell_turret_button = Button(c.SCREEN_WIDTH + 5, 240, sell_turret_image, "", True)
 begin_button = Button(c.SCREEN_WIDTH + 60, 315, begin_image, click_fx, True)
-restart_button = Button(310, 370, restart_image, click_fx, True)
+restart_button = Button(230, 370, restart_image, click_fx, True)
 fast_forward_button = Button(c.SCREEN_WIDTH + 60, 315, fast_forward_false_image, click_fx, False)
 play_button = Button((1020 // 2) - 75, 400, play_image, click_fx, True)
 next_button = Button(630, 450, next_image, click_fx, True)
 about_game_button = Button((1020 // 2) - 75, 465, about_image, click_fx, True)
 quit_game_button = Button((1020 // 2) - 75, 530, quit_game_image, click_fx, True)
 exit_button = Button(965, 5, exit_image, click_fx, True)
+exit2_button = Button(420, 370, quit_game_image, click_fx, True)
 pause_button = Button(910, 5, pause_image, click_fx, True)
 restart_level_button = Button(965, 60, restart_level_image, click_fx, True)
 close_button = Button(770, 175, close_image, click_fx, True)
+volume_button = Button(910, 60, volume_on_image, click_fx, True)
+
+mixer.music.load('audio/main_theme.wav')
+mixer.music.set_volume(0.5)
+mixer.music.play(-1)  # Reproducir en bucle
 
 run = True
 while run:
     clock.tick(c.FPS)
+    dt = clock.tick(60) / 1000  # Calcular delta time
+    world.delta_time = dt  # Pasar delta time al mundo
     # Pantalla de inicio
     if not game_paused:
         if in_menu:
@@ -298,7 +316,7 @@ while run:
                         world.game_speed = 1
                         fast_forward_button.image = fast_forward_false_image
                     else:
-                        world.game_speed = 2
+                        world.game_speed = 3
                         fast_forward_button.image = fast_forward_true_image
                     
                     # Spawn de enemigos
@@ -351,7 +369,7 @@ while run:
                 # Si la torreta es seleccionada, entonces mostrar el boton de mejora
                 if selected_turret:
                     # Mostrar el nivel en que se encuentra la torreta
-                    pg.draw.rect(screen, "maroon", (c.SCREEN_WIDTH, 400, 300, 320))
+                    pg.draw.rect(screen, "blue", (c.SCREEN_WIDTH, 400, 300, 320))
                     screen.blit(selected_turret.original_image, (c.SCREEN_WIDTH + 10, 400))
                     draw_text("TORRETA", text_font, "grey100", c.SCREEN_WIDTH + 10, 490)
                     draw_text("NIVEL: " + str(selected_turret.upgrade_level), text_font, "grey100", c.SCREEN_WIDTH + 10, 530)
@@ -414,6 +432,17 @@ while run:
                 if restart_level_button.draw(screen):
                     game_paused = True
                     confirm_restart = True
+                
+                # Revisar si el boton de volumen es presionado
+                if volume_button.draw(screen):
+                    if not volumen:
+                        pg.mixer.music.set_volume(0.5)
+                        volume_button.image = volume_on_image
+                        volumen = True
+                    else:
+                        pg.mixer.music.set_volume(0)
+                        volume_button.image = volume_off_image
+                        volumen = False
         else:
             pg.draw.rect(screen, "grey", (200, 200, 400, 250), border_radius = 30)
             if game_outcome == -1:
@@ -422,7 +451,7 @@ while run:
                 draw_text("PUNTUACION: " + str((kill_count + world.health)), text_font, "grey0", 255, 310)
             elif game_outcome == 1:
                 draw_text("¡HAS GANADO!", large_font, "grey0", 285, 220)
-                draw_text("SOLDADOS MUERTOS: " + str(kill_count), text_font, "grey0", 255, 270)
+                draw_text("SOLDADOS ELIMINADOS: " + str(kill_count), text_font, "grey0", 255, 270)
                 draw_text("SOLDADOS FALTANTES: " + str(missed_count), text_font, "grey0", 255, 300)
                 draw_text("PUNTUACION: " + str((kill_count + world.health)), text_font, "grey0", 255, 330)
             # Reiniciar el nivel
@@ -436,6 +465,7 @@ while run:
                 kill_count = 0
                 missed_count = 0
                 inicio_nivel = False
+                volumen = True
                 last_enemy_spawn = pg.time.get_ticks()
                 world = World(world_data, map_image)
                 world.process_data()
@@ -443,6 +473,8 @@ while run:
                 # Limpiar los grupos de enemigos y torretas
                 enemy_group.empty()
                 turret_group.empty()
+            elif exit2_button.draw(screen):
+                run = False
     else:
         # Confirmar la salida del juego
         if confirm_exit:
@@ -464,6 +496,7 @@ while run:
                 kill_count = 0
                 missed_count = 0
                 inicio_nivel = False
+                volumen = True
                 last_enemy_spawn = pg.time.get_ticks()
                 world = World(world_data, map_image)
                 world.process_data()
@@ -493,6 +526,7 @@ while run:
                 kill_count = 0
                 missed_count = 0
                 inicio_nivel = False
+                volumen = True
                 last_enemy_spawn = pg.time.get_ticks()
                 world = World(world_data, map_image)
                 world.process_data()

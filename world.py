@@ -17,6 +17,7 @@ class World():
         self.spawned_enemies = 0
         self.killed_enemies = 0
         self.missed_enemies = 0
+        self.delta_time = 0
     
     def process_data(self):
         # Procesar los datos del nivel
