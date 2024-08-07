@@ -218,6 +218,13 @@ mixer.music.load('audio/main_theme.wav')
 mixer.music.set_volume(0.5)
 mixer.music.play(-1)  # Reproducir en bucle
 
+# Establecer el tamaño de la pantalla que quieres en pantalla completa
+screen_width = 1020
+screen_height = 520
+
+# Configurar pantalla completa con la resolución deseada
+screen = pg.display.set_mode((screen_width, screen_height), pg.FULLSCREEN)
+
 #Crear un reloj
 clock = pg.time.Clock()
 run = True
